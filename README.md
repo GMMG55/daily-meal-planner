@@ -5,6 +5,14 @@
 
 > 智能推荐每日菜谱，支持按餐次、口味、心情、季节、天气、地域智能推荐，带详细做法和营养数据。
 
+> 💡 **本项目是 [OpenClaw](https://github.com/openclaw) 的 Skill 插件**，通过 ClawHub 安装：
+>
+> ```bash
+> clawhub install daily-meal-planner
+> ```
+>
+> 安装后即可在 OpenClaw 中直接使用，无需手动克隆。
+
 ---
 
 ## ✨ 核心功能
@@ -54,14 +62,23 @@
 
 ## 🚀 快速开始
 
-### 安装
+### 作为 OpenClaw Skill 安装（推荐）
+
+```bash
+clawhub install daily-meal-planner
+```
+
+安装后直接在 OpenClaw / QClaw 对话中使用即可，无需额外配置。
+
+### 作为独立项目使用
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/daily-meal-planner.git
+git clone https://github.com/GMMG55/daily-meal-planner.git
 cd daily-meal-planner
 
 # 无需安装依赖，Python 标准库即可运行
+python scripts/meal_recommend.py daily
 ```
 
 ### 使用
@@ -154,4 +171,4 @@ daily-meal-planner/
 
 ---
 
-> 💡 **提示**：本项目同时也是 [OpenClaw](https://github.com/openclaw) 的 Skill，可通过 `clawhub install daily-meal-planner` 安装使用。
+

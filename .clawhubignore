@@ -1,0 +1,5 @@
+# 大文件（超过 embed token 限制）
+scripts/menu_names.json
+
+# 用户数据
+scripts/user_profile.json

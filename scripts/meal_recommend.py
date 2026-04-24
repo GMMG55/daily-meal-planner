@@ -33,6 +33,25 @@ def load_meals_db():
 
 MEALS_DB = load_meals_db()
 
+# ============ 菜单名索引（从 JSON 加载）============
+def load_menu_names():
+    """加载菜单名索引（595道菜名+标签）"""
+    json_path = os.path.join(os.path.dirname(__file__), "menu_names.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        # 展平为 list，保留 category 字段
+        menu_list = []
+        for category, items in data.items():
+            for item in items:
+                item_copy = item.copy()
+                item_copy["category"] = category
+                menu_list.append(item_copy)
+        return menu_list
+    return []
+
+MENU_NAMES = load_menu_names()
+
 # ============ 季节/周几/天气配置 ============
 SEASON_TIPS = {
     "春": "🌸 春季宜养肝，多食绿色蔬菜、豆芽、春笋，少酸多甘",
@@ -133,7 +152,7 @@ def fetch_auto_weather(city):
         return None, None
     try:
         import urllib.request
-        url = f"http://wttr.in/{city}?format=j1"
+        url = f"https://wttr.in/{city}?format=j1"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=6) as r:
             data = json.loads(r.read().decode())
@@ -710,17 +729,48 @@ if __name__ == "__main__":
             print(f"未找到「{query}」，试试其他菜名")
 
     elif mode == "search":
-        all_meals = []
-        for _ in [1]:
-            all_meals = MEALS_DB
-        matched = all_meals[:5]
-        if raw_args:
-            matched = [m for m in all_meals
-                       if any(kw in m['name'] or kw in ",".join(m.get('tags',[])) for kw in raw_args.split())]
-        print(f"\n🔍 搜索结果\n")
-        for m in (matched[:5] if matched else all_meals[:5]):
-            print(format_meal_detail(m))
-        print("\n💡 要具体的做饭流程吗？回复「要」查看详细做法 👨‍🍳")
+        query = raw_args or ""
+        if not query:
+            print("用法: python meal_recommend.py search <关键词>")
+            sys.exit(1)
+        
+        # 1. 先从完整菜谱库搜索
+        all_meals = MEALS_DB
+        keywords = query.split()
+        
+        # 从完整菜谱匹配
+        complete_matches = [m for m in all_meals
+                          if any(kw in m['name'] or kw in ",".join(m.get('tags',[])) for kw in keywords)]
+        
+        # 2. 从菜单名索引搜索
+        menu_matches = [m for m in MENU_NAMES
+                       if any(kw in m['name'] or kw in ",".join(m.get('tags',[])) for kw in keywords)]
+        
+        # 去重（菜单名索引中的菜名可能与完整菜谱重复）
+        complete_names = set(m['name'] for m in complete_matches)
+        menu_matches_unique = [m for m in menu_matches if m['name'] not in complete_names]
+        
+        print(f"\n🔍 搜索「{query}」\n")
+        
+        # 输出完整菜谱
+        if complete_matches:
+            print("📋 完整菜谱：")
+            for m in complete_matches[:5]:
+                print(format_meal_detail(m))
+                print()
+        
+        # 输出菜单名索引
+        if menu_matches_unique:
+            print(f"🍽️ 更多相关菜品（共{len(menu_matches_unique)}道）：")
+            for m in menu_matches_unique[:10]:
+                tags_str = " ".join(f"#{t}" for t in m.get('tags', [])[:3])
+                category = m.get('category', '')
+                print(f"  · {m['name']} {tags_str} [{category}]")
+        
+        if not complete_matches and not menu_matches_unique:
+            print("未找到相关菜品，试试其他关键词")
+        
+        print("\n💡 回复「要」或菜名查看详细做法 👨‍🍳")
 
     elif mode == "weekly":
         print(f"\n📅 一周菜谱计划")

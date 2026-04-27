@@ -3,14 +3,19 @@
 """菜谱推荐引擎 v1.1"""
 import sys,random,os,json,argparse
 from datetime import datetime
-DATA_REPO="https://raw.githubusercontent.com/GMMG55/daily-meal-planner/main/scripts"
+DATA_MIRRORS=[
+ "https://cdn.jsdelivr.net/gh/GMMG55/daily-meal-planner@main/scripts",
+ "https://raw.githubusercontent.com/GMMG55/daily-meal-planner/main/scripts"
+]
 def _dl(fn):
  p=os.path.join(os.path.dirname(__file__),fn)
  if os.path.exists(p):return True
- try:
-  from urllib.request import urlopen;d=urlopen(f"{DATA_REPO}/{fn}",timeout=15).read()
-  with open(p,'wb') as f:f.write(d);return True
- except:return False
+ for base in DATA_MIRRORS:
+  try:
+   from urllib.request import urlopen;d=urlopen(f"{base}/{fn}",timeout=15).read()
+   with open(p,'wb') as f:f.write(d);return True
+  except:continue
+ return False
 def _lj(fn):
  p=os.path.join(os.path.dirname(__file__),fn)
  if not os.path.exists(p):_dl(fn)
@@ -151,10 +156,10 @@ def recommend_smart(meal_time=None,weather=None,location=None,profile=None,count
  if scored:
   b=scored[0];reason=f"📌 综合推荐：{'，'.join(b[2])}"if b[2]else f"📌 综合推荐：{WR.get(wd,'')}"
   pick(b[1],reason)
- sp=[m for m in pool if m not in used and ok(m)and season in m.get("seasonal",[])]
- if not sp:sp=[m for m in pool if m not in used and ok(m)]
+ sp=[m for m in pool if m['name'] not in used and ok(m)and season in m.get("seasonal",[])]
+ if not sp:sp=[m for m in pool if m['name'] not in used and ok(m)]
  if sp:pick(random.choice(sp),f"🌿 时令之选：{season}季新鲜食材")
- rem=[m for m in pool if m not in used and ok(m)]
+ rem=[m for m in pool if m['name'] not in used and ok(m)]
  if rem:pick(random.choice(rem),"🎲 随机惊喜：换换口味也不错")
  return results[:count],wd_name
 def fmt_results(results,wd_name,season,meal_time="午餐",weather=None,location=None):

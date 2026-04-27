@@ -1,5 +1,16 @@
-# 大文件（超过 embed token 限制）
-scripts/menu_names.json
+# 大数据文件（GitHub 外置下载）
+scripts/meals_db_compressed.json
+scripts/menu_names_compressed.json
+scripts/tags_index.json
+scripts/meals_tags_index.json
 
 # 用户数据
 scripts/user_profile.json
+
+# 发布脚本
+scripts/publish.py
+
+# 文档和参考资料
+README.md
+LICENSE
+references/

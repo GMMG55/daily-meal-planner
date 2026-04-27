@@ -4,8 +4,9 @@
 import sys,random,os,json,argparse
 from datetime import datetime
 DATA_MIRRORS=[
+ "https://github.com/GMMG55/daily-meal-planner/raw/main/scripts",
  "https://cdn.jsdelivr.net/gh/GMMG55/daily-meal-planner@main/scripts",
- "https://raw.githubusercontent.com/GMMG55/daily-meal-planner/main/scripts"
+ "https://ghproxy.com/https://raw.githubusercontent.com/GMMG55/daily-meal-planner/main/scripts"
 ]
 def _dl(fn):
  p=os.path.join(os.path.dirname(__file__),fn)

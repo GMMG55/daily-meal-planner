@@ -167,8 +167,7 @@ def fmt_results(results,wd_name,season,meal_time="午餐",weather=None,location=
  icon={"早餐":"🌅","午餐":"☀️","晚餐":"🌙","下午茶":"🫖","夜宵":"🌃"}.get(meal_time,"🍽️");lines=[]
  for i,(meal,reason,side,soup)in enumerate(results,1):
   cal=meal['cal']+(side['cal']if side else 0)+(soup['cal']if soup else 0)
-  rc=reason.replace("📌 ","").replace("🌿 ","").replace("🎲 ","")
-  for p in["综合推荐：","时令之选：","随机惊喜："]:rc=rc.replace(p,"")
+  rc=reason
   lines+=[f"  {'─'*32}",f"  {icon} 推荐{i}  {meal['name']}",f"  📝 {meal['desc']}",f"  💡 {rc}",f"  🔥 {cal}kcal  ⏱ {meal['time']}  难度: {meal['difficulty']}"]
   np=[f"{k}:{v}"for k,v in meal.get('nutrition',{}).items()if k in['蛋白质','维C','铁','钙']]
   if np:lines.append(f"  📊 {' | '.join(np)}")

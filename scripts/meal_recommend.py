@@ -16,40 +16,74 @@ import json
 from datetime import datetime
 
 
-# ============ 家常菜数据库（从 JSON 加载）============
+# ============ 数据加载（压缩格式支持）============
+def _load_json(filename):
+    path = os.path.join(os.path.dirname(__file__), filename)
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8-sig') as f:
+            return json.load(f)
+    return None
+
 def load_meals_db():
-    json_path = os.path.join(os.path.dirname(__file__), "meals_db.json")
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        # 展平 dict -> list，meal_type 直接用中文
-        meals = []
-        for cn_type, dishes in data.items():
-            for d in dishes:
-                d["meal_type"] = cn_type
-                meals.append(d)
-        return meals
-    return []
+    """加载 meals_db_compressed.json + meals_tags_index.json，解析数字索引→标签字符串"""
+    data = _load_json('meals_db_compressed.json')
+    tags_idx = _load_json('meals_tags_index.json') or []
+    if not data:
+        data = _load_json('meals_db.json')
+        if data:
+            meals = []
+            for cn_type, dishes in data.items():
+                for d in dishes:
+                    d = dict(d)
+                    d['meal_type'] = cn_type
+                    meals.append(d)
+            return meals
+        return []
+    # 解析压缩格式：t字段是数字索引→转回标签字符串
+    meals = []
+    for cn_type, dishes in data.items():
+        for d in dishes:
+            d = dict(d)
+            d['meal_type'] = cn_type
+            raw_tags = d.get('t', [])
+            d['tags'] = [tags_idx[i] for i in raw_tags if i < len(tags_idx)] if tags_idx else raw_tags
+            d['name'] = d.pop('n', d.get('name', ''))
+            d['cal'] = d.pop('c', d.get('cal', 0))
+            d['difficulty'] = d.pop('d', d.get('difficulty', '中'))
+            d['desc'] = d.pop('dsc', d.get('desc', ''))
+            d['ingredients'] = d.pop('ing', d.get('ingredients', []))
+            d['steps'] = d.pop('stp', d.get('steps', []))
+            meals.append(d)
+    return meals
+
+def load_menu_names():
+    """加载 menu_names_compressed.json + tags_index.json，解析数字索引→标签字符串"""
+    data = _load_json('menu_names_compressed.json')
+    tags_idx = _load_json('tags_index.json') or []
+    if not data:
+        data = _load_json('menu_names.json')
+        if data:
+            menu_list = []
+            for category, items in data.items():
+                for item in items:
+                    item = dict(item)
+                    item['category'] = category
+                    menu_list.append(item)
+            return menu_list
+        return []
+    menu_list = []
+    for category, items in data.items():
+        for item in items:
+            item = dict(item)
+            item['category'] = category
+            raw_tags = item.get('t', [])
+            item['tags'] = [tags_idx[i] for i in raw_tags if i < len(tags_idx)] if tags_idx else raw_tags
+            item['name'] = item.pop('n', item.get('name', ''))
+            item['cuisine'] = item.pop('c', item.get('cuisine', ''))
+            menu_list.append(item)
+    return menu_list
 
 MEALS_DB = load_meals_db()
-
-# ============ 菜单名索引（从 JSON 加载）============
-def load_menu_names():
-    """加载菜单名索引（595道菜名+标签）"""
-    json_path = os.path.join(os.path.dirname(__file__), "menu_names.json")
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        # 展平为 list，保留 category 字段
-        menu_list = []
-        for category, items in data.items():
-            for item in items:
-                item_copy = item.copy()
-                item_copy["category"] = category
-                menu_list.append(item_copy)
-        return menu_list
-    return []
-
 MENU_NAMES = load_menu_names()
 
 # ============ 季节/周几/天气配置 ============

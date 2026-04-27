@@ -195,15 +195,17 @@ python scripts/meal_recommend.py daily -n 5
 ### 混合架构（v1.0.3 新增）
 
 **本地数据层**：
+## 数据文件（压缩格式）
+
 | 数据文件 | 数量 | 用途 | 响应速度 |
 |---|---|---|---|
-| `meals_db.json` | 42道完整菜谱 | 快速推荐（含食材、做法、营养数据） | ⚡ 秒响应 |
-| `menu_names.json` | 595道菜单名 | 搜索候选池（仅名称+标签） | ⚡ 秒响应 |
+| `meals_db_compressed.json` + `meals_tags_index.json` | 42道完整菜谱 | 快速推荐（含食材、做法、营养数据） | ⚡ 秒响应 |
+| `menu_names_compressed.json` + `tags_index.json` | 595道菜单名 | 搜索候选池（仅名称+标签） | ⚡ 秒响应 |
 
 **运行时逻辑**：
 ```
 用户问「今晚吃什么」 → 从42道本地菜谱推荐（秒响应）
-用户搜索「辣」        → 同时搜meals_db和menu_names（秒响应）
+用户搜索「辣」        → 同时搜 meals_db_compressed 和 menu_names_compressed（秒响应）
 用户点具体菜「水煮鱼」→ 实时搜索获取详细做法（待集成API）
 ```
 
@@ -220,7 +222,9 @@ python scripts/meal_recommend.py daily -n 5
 - 夜宵: 28道
 - 下午茶: 52道
 
-### 菜品数据（meals_db.json）
+### 菜品数据（meals_db_compressed.json + meals_tags_index.json）
+
+> 压缩格式：标签用数字索引引用 `meals_tags_index.json`，key 用单字母（n=name, t=tags, c=cal 等）
 
 ```json
 {
@@ -312,7 +316,7 @@ score = 季节匹配(+3)
 ### 模板位置
 
 - 脚本：`scripts/meal_recommend.py`
-- 数据：`scripts/meals_db.json`
+- 数据：`scripts/meals_db_compressed.json` + `scripts/meals_tags_index.json`
 - 画像：`scripts/user_profile.json`（自动生成）
 - 搜索：`scripts/meal_search.py`（在线搜索下厨房/美食杰）
 
